@@ -1,0 +1,39 @@
+{
+  "name": "jparlant-admin",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "J-Parlant Agent Flow Visual Builder",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview",
+    "type-check": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@vue-flow/background": "latest",
+    "@vue-flow/controls": "latest",
+    "@vue-flow/core": "^1.44.2",
+    "@vue-flow/minimap": "latest",
+    "@vue-flow/node-toolbar": "latest",
+    "@vueuse/core": "^11.2.0",
+    "@vueuse/integrations": "^11.2.0",
+    "axios": "^1.7.7",
+    "highlight.js": "^11.11.1",
+    "markdown-it": "^14.1.1",
+    "naive-ui": "^2.40.1",
+    "pinia": "^2.2.6",
+    "vue": "^3.5.12",
+    "vue-router": "^4.4.5"
+  },
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.9",
+    "@types/node": "^22.9.0",
+    "@vitejs/plugin-vue": "^5.1.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "vue-tsc": "^2.1.6"
+  }
+}
