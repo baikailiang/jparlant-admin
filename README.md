@@ -1,8 +1,9 @@
-# J-Parlant Admin
+# J-Parlant
+### 🚀 让 AI Agent 告别“黑盒”运行
 
 **打造稳定、可控、业务驱动的企业级 AI Agent 低代码开发平台**
 
-J-Parlant Admin 是一个可视化的 AI Agent 编排与管理平台。它深受 Python 开源项目 Parlant 理念启发，致力于解决大模型在复杂业务场景下“不可控”的痛点。通过可视化拖拽与业务代码集成，帮助开发者构建具有确定性逻辑、长期记忆和业务感知力的数字员工。
+J-Parlant 是一个可视化的 AI Agent 编排与管理平台。它深受 Python 开源项目 Parlant 理念启发，致力于解决大模型在复杂业务场景下**不可控**的痛点。通过可视化拖拽与业务代码集成，帮助开发者构建具有确定性逻辑、长期记忆和业务感知力的数字员工。
 
 ## 💡 为什么需要 J-Parlant？
 
@@ -10,26 +11,27 @@ J-Parlant Admin 是一个可视化的 AI Agent 编排与管理平台。它深受
 
 - **行为不可控**：LLM 容易脱离业务范畴“胡言乱语”，难以保证回复的专业性与合规性。
 - **逻辑碎片化**：业务流程散落在大量的 Prompt 模板中，难以维护和审计。
-- **开发门槛高**：传统的 Agent 开发需要处理复杂的上下文状态、工具调用逻辑和流式输出。
-- **集成成本大**：AI 逻辑与现有 Java/Spring 业务系统结合不紧密，难以直接复用业务代码。
+- **缺乏长任务引导能力**: 传统模式局限于被动响应的“一问一答”，难以维持复杂的任务状态机，无法通过主动提问、逻辑纠偏和信息补全来引导用户完成长链路的业务闭环。
+- **执行链路难闭环**：LLM 工具调用具备随机性，常因幻觉或参数缺失调用失败，导致无法完成业务。
+- **高并发工程门槛高**：受限于 AI 推理天然的“长耗时”特性，开发者在应对海量并发时，被迫需要处理复杂的异步流控、线程隔离与非阻塞响应式逻辑，底层构建成本大。
 
-J-Parlant Admin 通过 **“逻辑编排 + 业务代码（Low-Code）”** 的模式，让 AI Agent 像传统软件一样稳定运行。
+J-Parlant 通过 **可视化逻辑编排 + 原子化业务代码（Low-Code）** 的模式，让 AI Agent 像传统软件一样稳定运行。
 
 ## 📦 项目组成
 
 J-Parlant 采用“**编排与运行分离**”的架构，由以下核心组件构成：
 
 *   **[J-Parlant Admin](https://gitee.com/sylvara/jparlant-admin)** (本项目)：可视化管理后台，负责 Agent 的创建、意图定义、流程编排与对话测试。
-*   **[J-Parlant Server](https://gitee.com/sylvara/jparlant-backend)**：Admin配套后端服务，负责存储Agent信息、流程编排等逻辑。
+*   **[J-Parlant Server](https://gitee.com/sylvara/jparlant-backend)**：Admin配套后端服务，负责存储数据。
 *   **[J-Parlant Starter](https://gitee.com/sylvara/j-parlant)**：**Agent核心工作引擎**。当你在 Admin 中完成流程编排后，需在具体的 Spring Boot 业务项目中引入此 Starter，即可通过 API 轻松调用已编排好的 Agent。
 
 
 
 ## 🚀 核心理念与能力
 
-### 可视化流程编排
+### 可视化、低代码流程编排
 
-低代码编排，通过拖拽方式设计 Agent 的对话流程，支持：
+通过拖拽方式设计 Agent 的对话流程，支持：
 - 条件分支：根据用户输入走不同的流程路径
 - 流程变量：在节点间传递和处理数据
 - 业务动作：调用后端服务执行业务逻辑
@@ -37,7 +39,7 @@ J-Parlant 采用“**编排与运行分离**”的架构，由以下核心组件
 ### 全链路合规与审计
 
 统一管理内容审核和合规检查规则：
-- 支持关键词、正则表达式、SpEL 表达式等多种匹配方式
+- 支持关键词、正则表达式、SpEL 表达式、AI 智能审核等多种匹配方式
 - 可分别配置输入检查和输出检查
 - 自定义拦截时的提示语和引导话术
 
@@ -104,8 +106,7 @@ proxy: {
 
 1. 进入 Agent 的意图管理页面
 2. 创建一个新意图，如「查询订单」
-3. 选择合适的流程类型
-4. 保存意图配置
+3. 保存意图配置
 
 ### 🔗 第三步：编排流程
 
@@ -118,32 +119,22 @@ proxy: {
 4. 连接节点形成完整流程
 5. 保存流程配置
 
-### ⚙️ 第四步：配置业务处理器（可选）
-
-如果流程中需要调用后端业务服务：
-
-1. 在流程编排页面点击设置图标
-2. 配置业务处理器服务地址
-3. 在动作节点中选择需要调用的业务方法
-4. 配置入参映射和结果提取
-
-### 🔌 第五步：业务集成
+### 🔌 第四步：业务集成
 
 当你在 Admin 平台完成流程编排后：
 
-在你的 Java 业务项目 `pom.xml` 中引入 **[J-Parlant Starter](https://gitee.com/sylvara/j-parlant)** 依赖。
+在你的业务项目 `pom.xml` 中引入 **[J-Parlant Starter](https://gitee.com/sylvara/j-parlant)** 依赖。
 
 > 详情参考：[J-Parlant Starter 使用文档](https://gitee.com/sylvara/j-parlant)
 
+### ✅ 第五步：测试验证
 
-### ✅ 第六步：测试验证
-
-在 `vite.config.ts` 中修改后端服务地址。**注意：此地址必须指向集成了[J-Parlant Starter](https://gitee.com/sylvara/j-parlant)的业务后端，否则无法进行对话测试。**
+在 `vite.config.ts` 中修改对话服务地址。**注意：此地址必须指向集成了[J-Parlant Starter](https://gitee.com/sylvara/j-parlant)的业务后端，否则无法进行对话测试。**
 
 ```typescript
 proxy: {
-  '/customerAgent': {
-    target: 'http://localhost:9085',  // 👈 关键：修改为你的业务后端地址
+  '/customerAgent': {     // 👈 关键：修改为你的对话服务url
+    target: 'http://localhost:9085',  // 👈 关键：修改为你的对话服务地址
     changeOrigin: true
   }
 }
@@ -166,6 +157,8 @@ npm run build
 ```
 
 将 `dist` 目录部署到任意静态文件服务器即可。
+
+
 
 ## 项目截图
 
