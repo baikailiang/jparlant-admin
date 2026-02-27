@@ -21,9 +21,9 @@ J-Parlant 通过 **可视化逻辑编排 + 原子化业务代码（Low-Code）**
 
 J-Parlant 采用“**编排与运行分离**”的架构，由以下核心组件构成：
 
-*   **[J-Parlant Admin](https://gitee.com/sylvara/jparlant-admin)** (本项目)：可视化管理后台，负责 Agent 的创建、意图定义、流程编排与对话测试。
-*   **[J-Parlant Server](https://gitee.com/sylvara/jparlant-backend)**：Admin配套后端服务，负责存储数据。
-*   **[J-Parlant Starter](https://gitee.com/sylvara/j-parlant)**：**Agent核心工作引擎**。当你在 Admin 中完成流程编排后，需在具体的 Spring Boot 业务项目中引入此 Starter，即可通过 API 轻松调用已编排好的 Agent。
+*   **[J-Parlant Admin](https://github.com/baikailiang/jparlant-admin)** (本项目)：可视化管理后台，负责 Agent 的创建、意图定义、流程编排与对话测试。
+*   **[J-Parlant Server](https://github.com/baikailiang/jparlant-backend)**：Admin配套后端服务，负责存储数据。
+*   **[J-Parlant Starter](https://github.com/baikailiang/j-parlant)**：**Agent核心工作引擎**。当你在 Admin 中完成流程编排后，需在具体的 Spring Boot 业务项目中引入此 Starter，即可通过 API 轻松调用已编排好的 Agent。
 
 
 
@@ -62,7 +62,7 @@ J-Parlant 采用“**编排与运行分离**”的架构，由以下核心组件
 ### 环境要求
 
 - Node.js 16+
-- 后端服务**[J-Parlant Server](https://gitee.com/sylvara/jparlant-backend)** (需提前启动后端服务)
+- 后端服务**[J-Parlant Server](https://github.com/baikailiang/jparlant-backend)** (需提前启动后端服务)
 
 ### 安装和运行
 
@@ -82,7 +82,7 @@ npm run dev
 
 ### 配置后端地址
 
-在 `vite.config.ts` 中修改[J-Parlant Server](https://gitee.com/sylvara/jparlant-backend)服务地址：
+在 `vite.config.ts` 中修改[J-Parlant Server](https://github.com/baikailiang/jparlant-backend)服务地址：
 
 ```typescript
 proxy: {
@@ -123,13 +123,13 @@ proxy: {
 
 当你在 Admin 平台完成流程编排后：
 
-在你的业务项目 `pom.xml` 中引入 **[J-Parlant Starter](https://gitee.com/sylvara/j-parlant)** 依赖。
+在你的业务项目 `pom.xml` 中引入 **[J-Parlant Starter](https://github.com/baikailiang/j-parlant)** 依赖。
 
-> 详情参考：[J-Parlant Starter 使用文档](https://gitee.com/sylvara/j-parlant)
+> 详情参考：[J-Parlant Starter 使用文档](https://github.com/baikailiang/j-parlant)
 
 ### ✅ 第五步：测试验证
 
-在 `vite.config.ts` 中修改对话服务地址。**注意：此地址必须指向集成了[J-Parlant Starter](https://gitee.com/sylvara/j-parlant)的业务后端，否则无法进行对话测试。**
+在 `vite.config.ts` 中修改对话服务地址。**注意：此地址必须指向集成了[J-Parlant Starter](https://github.com/baikailiang/j-parlant)的业务后端，否则无法进行对话测试。**
 
 ```typescript
 proxy: {
