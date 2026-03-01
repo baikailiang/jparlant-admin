@@ -1,9 +1,9 @@
 # J-Parlant
-### 🚀 让 AI Agent 告别“黑盒”运行
+## 🚀 让 AI Agent 告别“黑盒”运行
 
-**打造稳定、可控、业务驱动的企业级 AI Agent 低代码开发平台**
+### **专为Java开发者打造稳定、可控、业务驱动的企业级 AI Agent 开发平台**
 
-J-Parlant 是一个可视化的 AI Agent 编排与管理平台。它深受 Python 开源项目 Parlant 理念启发，致力于解决大模型在复杂业务场景下**不可控**的痛点。通过可视化拖拽与业务代码集成，帮助开发者构建具有确定性逻辑、长期记忆和业务感知力的数字员工。
+#### 长期以来，AI 领域被 Python 生态主导，Java 开发者在构建生产级 Agent 时常面临“框架缺失、工程底座薄弱、Python 集成成本高”的尴尬，且需要面对大模型在复杂业务场景下不可控的痛点。J-Parlant 致力于打破这一僵局，让 Java 开发者能够利用熟悉的工程思维，通过可视化拖拽编排与原生 Java 业务代码的深度耦合，从而构建出在复杂业务场景下依然表现稳定、高度受控的Agent。
 
 ## 💡 为什么需要 J-Parlant？
 
@@ -11,19 +11,19 @@ J-Parlant 是一个可视化的 AI Agent 编排与管理平台。它深受 Pytho
 
 - **行为不可控**：LLM 容易脱离业务范畴“胡言乱语”，难以保证回复的专业性与合规性。
 - **逻辑碎片化**：业务流程散落在大量的 Prompt 模板中，难以维护和审计。
-- **缺乏长任务引导能力**: 传统模式局限于被动响应的“一问一答”，难以维持复杂的任务状态机，无法通过主动提问、逻辑纠偏和信息补全来引导用户完成长链路的业务闭环。
+- **缺乏长任务引导能力**: 传统模式局限于被动响应的“一问一答”，难以维持复杂的任务状态机，无法主动引导用户完成长链路的业务场景。
 - **执行链路难闭环**：LLM 工具调用具备随机性，常因幻觉或参数缺失调用失败，导致无法完成业务。
-- **高并发工程门槛高**：受限于 AI 推理天然的“长耗时”特性，开发者在应对海量并发时，被迫需要处理复杂的异步流控、线程隔离与非阻塞响应式逻辑，底层构建成本大。
+- **高并发工程门槛高**：受限于 AI 推理天然的“长耗时”特性，开发者在应对海量并发时，被迫需要处理复杂的异步流控、线程隔离与非阻塞响应式逻辑，学习成本大。
 
-J-Parlant 通过 **可视化逻辑编排 + 原子化业务代码（Low-Code）** 的模式，让 AI Agent 像传统软件一样稳定运行。
+**J-Parlant 正是为解决这些痛点而生。它通过“可视化逻辑编排 + 原子化业务代码”的低代码模式，将不可控的行为、碎片化的逻辑与高并发门槛一站式化解，让 AI Agent 像传统软件一样稳定运行。**
 
 ## 📦 项目组成
 
-J-Parlant 采用“**编排与运行分离**”的架构，由以下核心组件构成：
+J-Parlant 采用 **“编排与运行分离”** 的架构，逻辑编排在独立工作台中完成定义，而执行过程则深度集成于业务宿主项目中。这种设计确保了 AI 逻辑的跨项目复用与极简集成，其核心组件包括：
 
-*   **[J-Parlant Admin](https://github.com/baikailiang/jparlant-admin)** (本项目)：可视化管理后台，负责 Agent 的创建、意图定义、流程编排与对话测试。
-*   **[J-Parlant Server](https://github.com/baikailiang/jparlant-backend)**：Admin配套后端服务，负责存储数据。
-*   **[J-Parlant Starter](https://github.com/baikailiang/j-parlant)**：**Agent核心工作引擎**。当你在 Admin 中完成流程编排后，需在具体的 Spring Boot 业务项目中引入此 Starter，即可通过 API 轻松调用已编排好的 Agent。
+*   **[J-Parlant Admin](https://gitee.com/sylvara/jparlant-admin)** （本项目）：可视化管理后台，负责 Agent 的创建、意图定义、流程编排与对话测试。
+*   **[J-Parlant Server](https://gitee.com/sylvara/jparlant-backend)**：Admin配套后端服务，承担Agent元数据的持久化存储。
+*   **[J-Parlant Starter](https://gitee.com/sylvara/j-parlant)**：**Agent工作引擎**。当你在 Admin 中完成流程编排后，需在具体的 Spring Boot 业务项目中引入此 Starter，即可通过 API 轻松调用已编排好的 Agent。
 
 
 
@@ -31,7 +31,7 @@ J-Parlant 采用“**编排与运行分离**”的架构，由以下核心组件
 
 ### 可视化、低代码流程编排
 
-通过拖拽方式设计 Agent 的对话流程，支持：
+通过拖拽方式设计 Agent 流程，支持：
 - 条件分支：根据用户输入走不同的流程路径
 - 流程变量：在节点间传递和处理数据
 - 业务动作：调用后端服务执行业务逻辑
@@ -57,41 +57,112 @@ J-Parlant 采用“**编排与运行分离**”的架构，由以下核心组件
 - 流式展示 AI 回复
 - 快速定位配置问题
 
+
+
 ## 快速开始
+
+### 快速集成体验
+
+> **想跳过编排，直接看效果？** 我们内置了一个贷款助手Agent，只需简单三步即可体验。
+
+#### 1. 基础环境准备
+- **初始化数据库**：执行项目根目录下的 `docs/sql/init.sql` 脚本。
+- **配置 Mysql，Redis 和 AI 模型**：
+```yaml
+spring:
+  r2dbc:
+    url: r2dbc:mysql://localhost:3306/jd?useSSL=false&serverTimezone=UTC
+    username: your_username
+    password: your_password
+    pool:
+      enabled: true
+      initial-size: 10
+      max-size: 50
+      max-idle-time: 30m
+      validation-query: SELECT 1
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      username: your_redis_user  # 无认证可删除此行
+      password: your_redis_pass  # 无认证可删除此行
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      base-url: ${OPENAI_API_URL}
+      chat:
+        options:
+          model: moonshot-v1-8k
+          temperature: 0.2
+          frequencyPenalty: 1.0
+          maxCompletionTokens: 1024
+          presencePenalty: 0.5
+```
+
+#### 2. 引入核心依赖
+在业务项目的 `pom.xml` 中添加 J-Parlant 官方 Starter：
+```xml
+<dependency>
+    <groupId>io.gitee.sylvara</groupId>
+    <artifactId>jparlant-spring-boot-starter</artifactId>
+    <version>1.0.1.RELEASE</version>
+</dependency>
+```
+
+#### 3. 调用 API 开启业务测试
+```java
+
+import com.jparlant.service.chat.JParlantChatService;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.jparlant.model.ChatRequest;
+
+@Autowired
+private JParlantChatService chatService;
+
+// 非流式
+chatService.chat(ChatRequest chatRequest);
+
+// 流式（打字机效果）
+chatService.stream(ChatRequest chatRequest);
+```
+
+---
+
+
+### 🛠️ 进阶：搭建可视化控制台编排自定义的Agent
+
 
 ### 环境要求
 
 - Node.js 16+
-- 后端服务**[J-Parlant Server](https://github.com/baikailiang/jparlant-backend)** (需提前启动后端服务)
+- 启动后端服务 **[J-Parlant Server](https://gitee.com/sylvara/jparlant-backend)**
 
 ### 安装和运行
 
 ```bash
 # 克隆项目
 git clone https://gitee.com/sylvara/jparlant-admin.git
-cd jparlant-admin
 
-# 安装依赖
-npm install
+# 配置后端地址
+在 `vite.config.ts` 中修改 J-Parlant Server 服务地址：
 
-# 启动开发服务器
-npm run dev
-```
-
-启动后访问 http://localhost:3000 即可使用。
-
-### 配置后端地址
-
-在 `vite.config.ts` 中修改[J-Parlant Server](https://github.com/baikailiang/jparlant-backend)服务地址：
-
-```typescript
 proxy: {
   '/api': {
-    target: 'http://localhost:9085',  // 修改为你的后端地址
+    target: 'http://localhost:9085',  // 修改为J-Parlant Server后端地址
     changeOrigin: true
   }
 }
+
+# 安装依赖
+cd jparlant-admin
+npm install
+
+# 启动开发服务器
+npm run 
+
+启动后访问 http://localhost:3000 即可使用。
 ```
+
 
 ## 使用指南
 
@@ -119,26 +190,20 @@ proxy: {
 4. 连接节点形成完整流程
 5. 保存流程配置
 
-### 🔌 第四步：业务集成
 
-当你在 Admin 平台完成流程编排后：
+### ✅ 第四步：测试验证(可选，也可用postman、 apifox测试)
 
-在你的业务项目 `pom.xml` 中引入 **[J-Parlant Starter](https://github.com/baikailiang/j-parlant)** 依赖。
-
-> 详情参考：[J-Parlant Starter 使用文档](https://github.com/baikailiang/j-parlant)
-
-### ✅ 第五步：测试验证
-
-在 `vite.config.ts` 中修改对话服务地址。**注意：此地址必须指向集成了[J-Parlant Starter](https://github.com/baikailiang/j-parlant)的业务后端，否则无法进行对话测试。**
+在 `vite.config.ts` 中修改对话业务服务地址。**注意：此地址必须指向集成了 **[J-Parlant Starter](https://gitee.com/sylvara/j-parlant)** 的业务后端，否则无法进行对话测试。**
 
 ```typescript
 proxy: {
-  '/customerAgent': {     // 👈 关键：修改为你的对话服务url
-    target: 'http://localhost:9085',  // 👈 关键：修改为你的对话服务地址
+  '/customerAgent': { // 修改为你的业务对话服务url
+    target: 'http://localhost:9085',  // 修改为你的业务对话服务地址
     changeOrigin: true
   }
 }
 ```
+**注意：** 需要通过@RequestHeader("userId") String userId在业务服务接口中接受userId参数。
 
 1. 进入意图的对话测试页面
 2. 输入测试问题
@@ -147,24 +212,21 @@ proxy: {
 
 
 
-## 构建部署
-
-```bash
-# 构建生产版本
-npm run build
-
-# 构建产物在 dist 目录
-```
-
-将 `dist` 目录部署到任意静态文件服务器即可。
-
-
-
 ## 项目截图
 
-![流程编排](./docs/images/flow.png)
+### 支持复杂的变量定义
 
 ![复杂的变量定义](./docs/images/variable.png)
+
+### 流程编排
+![流程编排](./docs/images/flow.png)
+
+### 贷款助手Agent测试
+![贷款助手Agent测试](./docs/images/chat.png)
+
+
+
+
 
 ## 贡献指南
 

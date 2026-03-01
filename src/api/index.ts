@@ -144,23 +144,27 @@ export const variableApi = {
 }
 
 // Chat API for testing intents
-// 修改 api.ts 中的流式解析部分
 export const chatApi = {
   streamChat: async (
     intentId: number,
     question: string,
     files: File[],
+    userId: string, // 1. 新增参数接收 UI 传来的 userId
     onChunk: (chunk: string) => void
   ): Promise<void> => {
     const formData = new FormData()
     formData.append('question', question)
+    formData.append('intentId', intentId.toString()) // 建议：将 intentId 也传给后端
     formData.append('chatQueryType', '1')
     files.forEach(file => formData.append('files', file))
+
+    // 如果后端习惯从 FormData 中获取 userId，也可以取消下面这行的注释
+    // formData.append('userId', userId) 
 
     const response = await fetch('/customerAgent/chatInText/stream', {
       method: 'POST',
       headers: {
-        'userId': '197663', // 保持一致
+        'userId': userId, // 2. 将硬编码修改为动态获取的参数
         'timezone': 'Asia/Shanghai'
       },
       body: formData
@@ -172,7 +176,7 @@ export const chatApi = {
     if (!reader) throw new Error('无法获取响应流')
 
     const decoder = new TextDecoder()
-    let buffer = '' // 新增：用于存储未处理完的字符串块
+    let buffer = '' 
 
     try {
       while (true) {
@@ -181,9 +185,7 @@ export const chatApi = {
 
         buffer += decoder.decode(value, { stream: true })
         
-        // SSE 规范以 \n\n 分隔消息
         let lines = buffer.split('\n')
-        // 最后一行如果不完整（不以换行符结尾），保留到下一次处理
         buffer = lines.pop() || '' 
 
         for (const line of lines) {
@@ -195,12 +197,10 @@ export const chatApi = {
 
           try {
             const json = JSON.parse(data)
-            // 修复：读取 .answer 而不是 .content
             if (json.answer) {
               onChunk(json.answer)
             }
           } catch (e) {
-            // 如果后端直接返回的是纯字符串而不是标准SSE JSON
             onChunk(data)
           }
         }
@@ -210,5 +210,6 @@ export const chatApi = {
     }
   }
 }
+
 
 export default api

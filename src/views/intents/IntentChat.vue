@@ -14,7 +14,18 @@
               <n-icon size="28"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6l6-6"/></svg></n-icon>
             </template>
           </n-button>
-          <h1 class="text-3xl font-black tracking-tight dark:text-white">对话助手</h1>
+          <div class="flex items-center gap-4">
+            <h1 class="text-3xl font-black tracking-tight dark:text-white">对话助手</h1>
+            <!-- 新增：UserId 输入框 -->
+            <n-input
+              v-model:value="userId"
+              size="small"
+              placeholder="用户ID"
+              class="!w-32 !rounded-xl !bg-zinc-100 dark:!bg-zinc-800"
+              :bordered="false"
+              @update:value="saveUserId"
+            />
+          </div>
         </div>
 
         <n-button @click="handleClearChat" quaternary circle size="large">
@@ -183,12 +194,21 @@ const isStreaming = ref(false)
 const chatContainer = ref<HTMLElement>()
 const inputRef = ref()
 
+// 新增：UserId 状态及持久化逻辑
+const userId = ref(localStorage.getItem('chat_user_id') || '')
+const saveUserId = (val: string) => {
+  localStorage.setItem('chat_user_id', val)
+}
+
 // 图片状态
 interface UploadedImage { id: string; file: File; url: string; }
 const uploadedImages = ref<UploadedImage[]>([])
 const tempFileList = ref<UploadFileInfo[]>([])
 
-const canSend = computed(() => (userInput.value && userInput.value.trim()) || uploadedImages.value.length)
+// 修改：canSend 逻辑，要求 userId 必填
+const canSend = computed(() => 
+  ((userInput.value && userInput.value.trim()) || uploadedImages.value.length) && userId.value.trim()
+)
 const formatTime = (d: Date) => d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
 
 const handleFileChange = (fileList: UploadFileInfo[]) => {
@@ -228,24 +248,25 @@ const scrollToBottom = () => {
 }
 
 const handleSendMessage = async () => {
-  if (!canSend.value) return
+  if (!canSend.value) {
+    if (!userId.value.trim()) message.warning('请先输入用户ID')
+    return
+  }
   
   const content = userInput.value.trim()
-  // 关键：克隆当前的图片URL数组到消息历史中
   const currentImageUrls = uploadedImages.value.map(img => img.url)
   const currentFiles = uploadedImages.value.map(img => img.file)
+  const currentUserId = userId.value.trim() // 发送时锁定当前 ID
   
   // 将图片信息存入消息记录
   messages.value.push({ 
     role: 'user', 
     content: content, 
-    images: currentImageUrls, // 这里保存了预览地址
+    images: currentImageUrls, 
     timestamp: new Date() 
   })
   
   userInput.value = ''
-  // 注意：这里不要 revokeObjectURL，因为消息列表中还要用。
-  // 我们只清空待发送队列的引用，ObjectUrls 的释放统一交由 handleClearChat 或 onUnmounted。
   uploadedImages.value = []
   tempFileList.value = []
   scrollToBottom()
@@ -254,7 +275,8 @@ const handleSendMessage = async () => {
   try {
     let assistantMessage = ''
     const messageIndex = messages.value.length
-    await chatApi.streamChat(intentId.value, content, currentFiles, (chunk) => {
+    // 修改：将 userId 作为参数传递给接口
+    await chatApi.streamChat(intentId.value, content, currentFiles, currentUserId, (chunk) => {
       assistantMessage += chunk
       if (messages.value.length > messageIndex) {
         messages.value[messageIndex] = { role: 'assistant', content: assistantMessage, timestamp: new Date() }
@@ -272,7 +294,6 @@ const handleSendMessage = async () => {
 }
 
 const handleClearChat = () => {
-  // 释放所有消息中占用的 URL 资源
   messages.value.forEach(msg => {
     if (msg.images) msg.images.forEach((url: string) => URL.revokeObjectURL(url))
   })
@@ -281,7 +302,6 @@ const handleClearChat = () => {
 
 onMounted(() => nextTick(() => inputRef.value?.focus()))
 onUnmounted(() => {
-  // 彻底释放内存
   handleClearChat()
   uploadedImages.value.forEach(img => URL.revokeObjectURL(img.url))
 })
