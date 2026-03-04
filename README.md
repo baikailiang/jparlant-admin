@@ -3,7 +3,7 @@
 
 ### **专为Java开发者打造稳定、可控、业务驱动的企业级 AI Agent 开发平台**
 
-#### 长期以来，AI 领域被 Python 生态主导，Java 开发者在构建生产级 Agent 时常面临“框架缺失、工程底座薄弱、Python 集成成本高”的尴尬，且需要面对大模型在复杂业务场景下不可控的痛点。J-Parlant 致力于打破这一僵局，让 Java 开发者能够利用熟悉的工程思维，通过可视化拖拽编排与原生 Java 业务代码的深度耦合，从而构建出在复杂业务场景下依然表现稳定、高度受控的Agent。
+长期以来，AI 领域被 Python 生态主导，Java 开发者在构建生产级 Agent 时常面临“框架缺失、工程底座薄弱、Python 集成成本高”的尴尬，且需要面对大模型在复杂业务场景下不可控的痛点。J-Parlant 致力于打破这一僵局，让 Java 开发者能够利用熟悉的工程思维，通过可视化拖拽编排与原生 Java 业务代码的深度耦合，从而构建出在复杂业务场景下依然表现稳定、高度受控的Agent。
 
 ## 💡 为什么需要 J-Parlant？
 
@@ -21,11 +21,23 @@
 
 J-Parlant 采用 **“编排与运行分离”** 的架构，逻辑编排在独立工作台中完成定义，而执行过程则深度集成于业务宿主项目中。这种设计确保了 AI 逻辑的跨项目复用与极简集成，其核心组件包括：
 
-*   **[J-Parlant Admin](https://gitee.com/sylvara/jparlant-admin)** （本项目）：可视化管理后台，负责 Agent 的创建、意图定义、流程编排与对话测试。
-*   **[J-Parlant Server](https://gitee.com/sylvara/jparlant-backend)**：Admin配套后端服务，承担Agent元数据的持久化存储。
-*   **[J-Parlant Starter](https://gitee.com/sylvara/j-parlant)**：**Agent工作引擎**。当你在 Admin 中完成流程编排后，需在具体的 Spring Boot 业务项目中引入此 Starter，即可通过 API 轻松调用已编排好的 Agent。
+*   **[J-Parlant Admin](https://github.com/baikailiang/jparlant-admin)** （本项目）：可视化管理后台，负责 Agent 的创建、意图定义、流程编排与对话测试。
+*   **[J-Parlant Server](https://github.com/baikailiang/jparlant-backend)**：Admin配套后端服务，承担Agent元数据的持久化存储。
+*   **[J-Parlant Starter](https://github.com/baikailiang/j-parlant)**：**Agent工作引擎**。当你在 Admin 中完成流程编排后，需在具体的 Spring Boot 业务项目中引入此 Starter，即可通过 API 轻松调用已编排好的 Agent。
 
+### 🛠️ 技术栈选型
 
+| 组件 | 技术选型 | 核心说明 |
+| :--- | :--- | :--- |
+| **核心环境** | Java 17+ |  |
+| **响应式引擎** | Project Reactor | 基于 Mono/Flux 的全链路非阻塞异步编程模型 |
+| **AI 运行环境** | Spring AI | 厂商中立架构，深度适配多模型 |
+| **Web 架构** | Spring WebFlux | 高并发场景下的极致吞吐量保障 |
+| **响应式数据库** | R2DBC | 数据库连接层全异步化，消除 IO 阻塞 |
+| **响应式 Redis** | Spring Data Redis (Reactive) | 基于 Lettuce 的非阻塞分布式存储与状态管理 |
+| **本地缓存** | Caffeine | 毫秒级响应的高性能本地内存缓存 |
+
+---
 
 ## 🚀 核心理念与能力
 
@@ -135,7 +147,7 @@ chatService.stream(ChatRequest chatRequest);
 ### 环境要求
 
 - Node.js 16+
-- 启动后端服务 **[J-Parlant Server](https://gitee.com/sylvara/jparlant-backend)**
+- 启动后端服务 **[J-Parlant Server](https://github.com/baikailiang/jparlant-backend)**
 
 ### 安装和运行
 
@@ -193,7 +205,7 @@ npm run
 
 ### ✅ 第四步：测试验证(可选，也可用postman、 apifox测试)
 
-在 `vite.config.ts` 中修改对话业务服务地址。**注意：此地址必须指向集成了 **[J-Parlant Starter](https://gitee.com/sylvara/j-parlant)** 的业务后端，否则无法进行对话测试。**
+在 `vite.config.ts` 中修改对话业务服务地址。**注意：此地址必须指向集成了 **[J-Parlant Starter](https://github.com/baikailiang/j-parlant)** 的业务后端，否则无法进行对话测试。**
 
 ```typescript
 proxy: {
