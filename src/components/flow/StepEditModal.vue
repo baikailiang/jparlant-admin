@@ -55,16 +55,28 @@
             />
           </n-form-item>
 
-          <!-- 对话交互：仅交互节点和结束节点显示 -->
-          <template v-if="form.stepType === 'INPUT' || form.stepType === 'COMPLETED'">
+          <!-- 对话交互：仅交互节点、过渡节点和结束节点显示 -->
+          <template v-if="form.stepType === 'INPUT' || form.stepType === 'COMPLETED' || form.stepType === 'TRANSITION'">
             <n-divider />
-            <div class="section-title">对话交互</div>
+            <div class="section-title flex justify-between items-center">
+              <span>{{ form.stepType === 'TRANSITION' ? '过渡回复' : '对话交互' }}</span>
+              <n-form-item :show-feedback="false" :show-label="false" class="m-0">
+                <n-space align="center">
+                  <span class="text-xs text-gray-500">直接回复给用户</span>
+                  <n-switch 
+                    v-model:value="form.isDirectReturn" 
+                    :checked-value="1" 
+                    :unchecked-value="0" 
+                  />
+                </n-space>
+              </n-form-item>
+            </div>
             <n-form-item label="执行指令" path="prompt">
               <n-input
                 v-model:value="form.prompt"
                 type="textarea"
                 :rows="5"
-                placeholder="需要 AI 执行的指令 (必填)"
+                :placeholder="form.stepType === 'TRANSITION' ? '输入 AI 回复的指令内容 (必填)' : '需要 AI 执行的指令 (必填)'"
               />
             </n-form-item>
           </template>
@@ -610,6 +622,19 @@
                 </div>
               </n-alert>
 
+              <!-- 已配置时显示当前服务地址 -->
+              <div v-else-if="ocrActionEnabled" class="flex items-center justify-between mb-4 px-3 py-2 bg-blue-50 rounded-lg border border-blue-200">
+                <div class="flex items-center text-sm text-blue-700">
+                  <n-icon size="16" class="mr-2">
+                    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m-2 15l-5-5l1.41-1.41L10 14.17l7.59-7.59L19 8z"/></svg>
+                  </n-icon>
+                  <span>服务地址：{{ getMetadataApiUrl() }}</span>
+                </div>
+                <n-button text type="primary" size="small" @click="openMetadataConfigModal">
+                  修改配置
+                </n-button>
+              </div>
+
               <div v-if="ocrActionEnabled" class="bg-white p-4 rounded-xl border space-y-4">
                 <!-- 第一步：选择处理器 -->
                 <div class="step-box">
@@ -983,6 +1008,11 @@
             <n-alert type="success">结束节点标志着流程的完成。请在"对话交互"中设置结束时的提示语。</n-alert>
           </template>
 
+          <!-- 过渡节点配置 -->
+          <template v-if="form.stepType === 'TRANSITION'">
+            <n-alert type="info">过渡节点用于在流程中插入 AI 回复，作为步骤间的过渡，无需识别用户输入或执行业务逻辑。</n-alert>
+          </template>
+
           <!-- 注意：分支连线配置已移至画布拖拽连线方式，在此处不再配置 -->
         </div>
       </div>
@@ -1135,6 +1165,7 @@ const handleSpelVarInsert = (index: number, varName: string) => {
 const stepTypeOptions = [
   { label: '交互 (询问信息)', value: 'INPUT' },
   { label: '执行 (后台逻辑)', value: 'ACTION' },
+  { label: '过渡 (AI 回复)', value: 'TRANSITION' },
   { label: '完成 (流程结束)', value: 'COMPLETED' }
 ]
 
@@ -1167,6 +1198,7 @@ interface Props {
 interface Emits {
   (e: 'update:show', value: boolean): void
   (e: 'save', step: IntentStep): void
+  (e: 'variable-added'): void
 }
 
 const props = defineProps<Props>()
@@ -1947,6 +1979,7 @@ const initFormState = () => ({
   coreActionsJson: '',
   ocrAction: '',
   metadataJson: '',
+  isDirectReturn: 0,
   selectedVarNames: [] as string[]
 })
 
@@ -2356,6 +2389,7 @@ const handleAddVariable = async () => {
     message.success('变量添加成功')
     showAddVariableModal.value = false
     await fetchVariables()
+    emits('variable-added')
   } catch (error) {
     message.error('添加变量失败')
   } finally {
@@ -2391,7 +2425,7 @@ const rules = computed(() => ({
   name: { required: true, message: '请输入名称', trigger: 'blur' },
   stepType: { required: true, message: '请选择类型', trigger: 'change' },
   belongToPhase: { required: true, message: '请选择阶段', trigger: 'change' },
-  prompt: (form.value.stepType === 'INPUT' || form.value.stepType === 'COMPLETED') ? { required: true, message: '请输入指令', trigger: 'blur' } : {},
+  prompt: (form.value.stepType === 'INPUT' || form.value.stepType === 'COMPLETED' || form.value.stepType === 'TRANSITION') ? { required: true, message: '请输入指令', trigger: 'blur' } : {},
   selectedVarNames: form.value.stepType === 'INPUT' ? { required: false, type: 'array', message: '请至少选择一个变量', trigger: 'change' } : {}
 }))
 
@@ -2611,6 +2645,8 @@ watch(() => props.step, (newStep) => {
   const baseForm = { ...newStep }
   
   try {
+    baseForm.isDirectReturn = newStep.isDirectReturn ?? 0
+
     // 1. 解析已选变量名
     if (newStep.expectedInputsJson) {
       baseForm.selectedVarNames = Object.keys(JSON.parse(newStep.expectedInputsJson))
@@ -2815,6 +2851,7 @@ const handleSave = async () => {
         // 注意这里改为从 ocrConfig.value 获取
         ocrActionData = JSON.stringify({
           targetProcessor: ocrConfig.value.targetProcessor,
+          inputMapping: {},
           outputMapping: oM
         })
       }

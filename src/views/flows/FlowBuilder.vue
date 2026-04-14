@@ -278,6 +278,7 @@
       :intent-id="selectedIntentId"
       :all-steps="steps"
       @save="handleStepSave"
+      @variable-added="loadVariables"
     />
 
     <!-- 变量编辑 Modal -->
@@ -834,6 +835,7 @@ const modalTitle = computed(() => {
 const nodeTypes = [
   { type: 'INPUT', label: '交互节点', description: '收集用户输入', icon: '📝', iconClass: 'text-blue-500' },
   { type: 'ACTION', label: '逻辑节点', description: '执行业务逻辑', icon: '⚙️', iconClass: 'text-green-500' },
+  { type: 'TRANSITION', label: '过渡节点', description: 'AI 回复过渡', icon: '🔄', iconClass: 'text-orange-500' },
   { type: 'COMPLETED', label: '结束节点', description: '流程结束', icon: '✅', iconClass: 'text-gray-500' }
 ]
 

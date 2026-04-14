@@ -6,6 +6,7 @@
         :class="[
           data.step.stepType === 'INPUT' ? 'border-blue-400 bg-gradient-to-br from-blue-50/50 to-blue-100/30' :
           data.step.stepType === 'ACTION' ? 'border-green-400 bg-gradient-to-br from-green-50/50 to-green-100/30' :
+          data.step.stepType === 'TRANSITION' ? 'border-orange-400 bg-gradient-to-br from-orange-50/50 to-orange-100/30' :
           'border-purple-400 bg-gradient-to-br from-purple-50/50 to-purple-100/30',
           { 'selected-effect': selected }
         ]"
@@ -31,6 +32,7 @@
             :class="{
               'bg-gradient-to-br from-blue-500 to-blue-600 text-white': data.step.stepType === 'INPUT',
               'bg-gradient-to-br from-green-500 to-green-600 text-white': data.step.stepType === 'ACTION',
+              'bg-gradient-to-br from-orange-500 to-orange-600 text-white': data.step.stepType === 'TRANSITION',
               'bg-gradient-to-br from-purple-500 to-purple-600 text-white': data.step.stepType === 'COMPLETED'
             }"
           >
@@ -42,6 +44,7 @@
               :class="{
                 'text-blue-500': data.step.stepType === 'INPUT',
                 'text-green-500': data.step.stepType === 'ACTION',
+                'text-orange-500': data.step.stepType === 'TRANSITION',
                 'text-purple-500': data.step.stepType === 'COMPLETED'
               }"
             >
@@ -96,7 +99,7 @@ const props = defineProps<Props>()
 const emits = defineEmits(['edit', 'delete'])
 
 const getStepIcon = (type: StepType) => {
-  const icons = { INPUT: '📝', ACTION: '⚙️', COMPLETED: '✅' }
+  const icons = { INPUT: '📝', ACTION: '⚙️', TRANSITION: '🔄', COMPLETED: '✅' }
   return icons[type] || '❓'
 }
 
@@ -118,6 +121,7 @@ const getTypeLabel = (stepType: StepType) => {
   const typeLabels: Record<StepType, string> = {
     'INPUT': '输入',
     'ACTION': '执行',
+    'TRANSITION': '过渡',
     'COMPLETED': '完成'
   }
   return typeLabels[stepType] || stepType
@@ -135,6 +139,7 @@ const getTypeTagType = (stepType: StepType) => {
   switch (stepType) {
     case 'INPUT': return 'info'    // 对应蓝色
     case 'ACTION': return 'success' // 对应绿色
+    case 'TRANSITION': return 'warning' // 对应橙色
     case 'COMPLETED': return 'error' // 对应紫色/红色系
     default: return 'default'
   }

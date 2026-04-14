@@ -79,7 +79,7 @@ export interface GlossaryTerm {
 
 export type FlowType = 'LINEAR' | 'CONDITIONAL' | 'LOOP' | 'INTERACTIVE'
 
-export type StepType = 'INPUT' | 'ACTION' | 'COMPLETED'
+export type StepType = 'INPUT' | 'ACTION' | 'COMPLETED' | 'TRANSITION'
 
 export type SessionPhase = 
   | 'READY' 
