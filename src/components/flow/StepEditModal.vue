@@ -462,7 +462,7 @@
                               <div v-else-if="isTypeBindable(item.schema) && getOutputMappingArray(actionIndex).some(m => m.key === item.jsonPath)" class="flex gap-1 items-center">
                                 <n-tree-select
                                   :value="getOutputMappingArray(actionIndex).find(m => m.key === item.jsonPath)?.value"
-                                  :options="outputVariableOptions"
+                                  :options="getOutputVariableOptionsForPath(actionIndex, item.jsonPath)"
                                   :render-label="renderActionVariableLabel"
                                   placeholder="搜索并选择变量属性..."
                                   size="tiny"
@@ -488,7 +488,7 @@
                             </div>
                           </div>
                           <!-- 数组类型 elementMapping：子属性逐行映射 -->
-                          <template v-if="isArrayType(item.schema) && getOutputMappingArray(actionIndex).find(m => m.key === item.jsonPath && m.value)">
+                          <template v-if="isArrayType(item.schema) && !(item.schema.children && item.schema.children.length > 0) && getOutputMappingArray(actionIndex).find(m => m.key === item.jsonPath && m.value)">
                           <div v-for="(em, emIdx) in getOutputMappingArray(actionIndex).find(m => m.key === item.jsonPath)?.elementMapping || []"
                                :key="'em-' + idx + '-' + emIdx"
                                class="px-3 py-2 border-b last:border-b-0 grid grid-cols-12 gap-2 items-center bg-blue-50/30"
@@ -731,7 +731,7 @@
                           <div v-else-if="isTypeBindable(item.schema) && ocrOutputMappingArray.some(m => m.key === item.jsonPath)" class="flex gap-1 items-center">
                             <n-tree-select
                               :value="ocrOutputMappingArray.find(m => m.key === item.jsonPath)?.value"
-                              :options="outputVariableOptions"
+                              :options="getOcrOutputVariableOptionsForPath(item.jsonPath)"
                               :render-label="renderActionVariableLabel"
                               placeholder="搜索并选择变量属性..."
                               size="tiny"
@@ -757,7 +757,7 @@
                         </div>
                       </div>
                       <!-- 数组类型 elementMapping：子属性逐行映射 -->
-                      <template v-if="isArrayType(item.schema) && ocrOutputMappingArray.find(m => m.key === item.jsonPath && m.value)">
+                      <template v-if="isArrayType(item.schema) && !(item.schema.children && item.schema.children.length > 0) && ocrOutputMappingArray.find(m => m.key === item.jsonPath && m.value)">
                       <div v-for="(em, emIdx) in ocrOutputMappingArray.find(m => m.key === item.jsonPath)?.elementMapping || []"
                            :key="'ocr-em-' + idx + '-' + emIdx"
                            class="px-3 py-2 border-b last:border-b-0 grid grid-cols-12 gap-2 items-center bg-blue-50/30"
@@ -1581,7 +1581,6 @@ const flattenReturnSchemas = (schemas: PropertySchema[] | null | undefined, pref
   
   if (!schemas || schemas.length === 0) return result
 
-  // 1. 只有在处理最顶层（没有 prefix）时，手动添加一个“完整结果”节点
   if (!prefix) {
     result.push({ 
       jsonPath: '.', 
@@ -1590,16 +1589,19 @@ const flattenReturnSchemas = (schemas: PropertySchema[] | null | undefined, pref
     })
   }
 
-  // 2. 遍历并列的根属性
   for (const s of schemas) {
+    // 基础路径生成
     const currentPath = prefix ? `${prefix}.${s.name}` : `$.${s.name}`
-    const depth = prefix ? currentPath.split('.').length - 1 : 1 // 根属性深度设为1
+    const depth = prefix ? currentPath.split('.').length - 1 : 1
     
     result.push({ jsonPath: currentPath, schema: s, depth })
 
-    // 3. 递归处理子属性（ARRAY 类型不递归，其子属性通过 elementMapping 展示）
-    if (s.complex && s.children && s.children.length > 0 && !isListType(s.type)) {
-      result.push(...flattenReturnSchemas(s.children, currentPath))
+    // [彻底解决逻辑]：
+    // 1. 取消 !isListType(s.type) 的限制，允许数组向下展开
+    // 2. 如果当前节点是数组，则在传递给子节点的路径中加入 [*]
+    if (s.complex && s.children && s.children.length > 0) {
+      const nextPrefix = isListType(s.type) ? `${currentPath}[*]` : currentPath;
+      result.push(...flattenReturnSchemas(s.children, nextPrefix))
     }
   }
   return result
@@ -1608,7 +1610,8 @@ const flattenReturnSchemas = (schemas: PropertySchema[] | null | undefined, pref
 // 处理选择 Bean 变化
 const handleBeanChange = (actionIndex: number, beanName: string) => {
   const action = coreActions.value[actionIndex]
-  action._selectedBean = beanName
+  const bean = actionMetadata.value.find(b => b.beanName === beanName)
+  action._selectedBean = bean ? bean.beanName : beanName
   action._selectedMethod = ''
   action.targetProcessor = ''
   action._inputMappingArray = []
@@ -1619,12 +1622,15 @@ const handleBeanChange = (actionIndex: number, beanName: string) => {
 // 处理选择方法变化
 const handleMethodChange = (actionIndex: number, methodName: string) => {
   const action = coreActions.value[actionIndex]
-  const beanName = action._selectedBean
+  const bean = actionMetadata.value.find(b => b.beanName === action._selectedBean)
+  const method = bean?.methods.find(m => m.methodName === methodName)
+  const beanValue = bean ? bean.beanName : action._selectedBean
+  const methodValue = method ? method.methodName : methodName
 
-  action._selectedMethod = methodName
-  action.targetProcessor = `${beanName}.${methodName}`
+  action._selectedMethod = methodValue
+  action.targetProcessor = `${beanValue}.${methodValue}`
 
-  const methodMeta = getSelectedMethodMetadata(beanName, methodName)
+  const methodMeta = method || getSelectedMethodMetadata(beanValue, methodValue)
   action._methodMetadata = methodMeta
 
   // 根据参数 schema 初始化入参映射（仅顶层参数）
@@ -1710,6 +1716,57 @@ const getArrayElementTargetOptions = (targetVarPath: string) => {
     return result
   }
   return buildOptions(variable.children)
+}
+
+// 结果提取-数组子属性作用域：若祖先为已选中目标数组变量的数组行，则只显示该数组变量的子属性作为可选项
+const buildScopedOutputVariableOptions = (targetVarPath: string) => {
+  if (!targetVarPath) return null
+  const varName = String(targetVarPath).replace(/^\$\./, '')
+  const variable = availableVariables.value.find(v => v.name === varName)
+  if (!variable || !variable.children || variable.children.length === 0) return null
+  const buildTree = (vars: FlowVariable[], parentPath: string): any[] => {
+    return vars.map(v => {
+      const currentPath = `${parentPath}.${v.name}`
+      const hasChildren = v.children && v.children.length > 0
+      const node: any = {
+        label: v.name,
+        key: currentPath,
+        type: v.type,
+        description: v.description,
+        disabled: (v.type === 'OBJECT' || v.type === 'ARRAY') && hasChildren,
+      }
+      if (hasChildren) {
+        node.children = buildTree(v.children!, currentPath)
+      }
+      return node
+    })
+  }
+  return buildTree(variable.children, `$.${varName}`)
+}
+
+const isArrayAncestorPath = (ancestor: string, descendant: string): boolean => {
+  if (!ancestor || !descendant || ancestor === descendant) return false
+  if (ancestor === '.') return true
+  return descendant.startsWith(ancestor + '.') || descendant.startsWith(ancestor + '[')
+}
+
+const getOutputVariableOptionsForPath = (actionIndex: number, jsonPath: string) => {
+  const outputArr = getOutputMappingArray(actionIndex)
+  const arrayAncestor = outputArr.find((m: any) => m.isArray && m.value && isArrayAncestorPath(m.key, jsonPath))
+  if (arrayAncestor) {
+    const scoped = buildScopedOutputVariableOptions(arrayAncestor.value)
+    if (scoped) return scoped
+  }
+  return outputVariableOptions.value
+}
+
+const getOcrOutputVariableOptionsForPath = (jsonPath: string) => {
+  const arrayAncestor = ocrOutputMappingArray.value.find((m: any) => m.isArray && m.value && isArrayAncestorPath(m.key, jsonPath))
+  if (arrayAncestor) {
+    const scoped = buildScopedOutputVariableOptions(arrayAncestor.value)
+    if (scoped) return scoped
+  }
+  return outputVariableOptions.value
 }
 
 // 树选择器的标签渲染函数（只显示名称，悬浮提示类型和描述）
@@ -2238,7 +2295,8 @@ const removeOcrOutputMapping = (idx: number) => ocrOutputMappingArray.value.spli
 
 // 处理 OCR 选择 Bean 变化
 const handleOcrBeanChange = (beanName: string) => {
-  ocrConfig.value._selectedBean = beanName
+  const bean = actionMetadata.value.find(b => b.beanName === beanName)
+  ocrConfig.value._selectedBean = bean ? bean.beanName : beanName
   ocrConfig.value._selectedMethod = ''
   ocrConfig.value.targetProcessor = ''
   ocrConfig.value._methodMetadata = null
@@ -2247,10 +2305,13 @@ const handleOcrBeanChange = (beanName: string) => {
 
 // 处理 OCR 选择方法变化
 const handleOcrMethodChange = (methodName: string) => {
-  const beanName = ocrConfig.value._selectedBean
-  ocrConfig.value._selectedMethod = methodName
-  ocrConfig.value.targetProcessor = `${beanName}.${methodName}`
-  ocrConfig.value._methodMetadata = getSelectedMethodMetadata(beanName, methodName)
+  const bean = actionMetadata.value.find(b => b.beanName === ocrConfig.value._selectedBean)
+  const method = bean?.methods.find(m => m.methodName === methodName)
+  const beanValue = bean ? bean.beanName : ocrConfig.value._selectedBean
+  const methodValue = method ? method.methodName : methodName
+  ocrConfig.value._selectedMethod = methodValue
+  ocrConfig.value.targetProcessor = `${beanValue}.${methodValue}`
+  ocrConfig.value._methodMetadata = method || getSelectedMethodMetadata(beanValue, methodValue)
   ocrOutputMappingArray.value = []
 }
 
@@ -2839,12 +2900,27 @@ const handleSave = async () => {
                 elemMap[em.sourceKey] = em.targetKey
               }
             })
-            oM[m.key] = {
+            ocrOutputMappingArray.value.forEach((child: any) => {
+              if (child === m || child.isArray || !child.key || !child.value) return
+              const prefix = m.key + '['
+              if (!child.key.startsWith(prefix)) return
+              const bracketEnd = child.key.indexOf(']', prefix.length)
+              if (bracketEnd < 0) return
+              const sourceKey = '$' + child.key.substring(bracketEnd + 1)
+              const targetVal = String(child.value).split('.').pop() || child.value
+              elemMap[sourceKey] = targetVal
+            })
+            const outerKey = /^\$\.[^.\[]+$/.test(m.key) ? '.' : m.key
+            oM[outerKey] = {
               target: (!m.value || m.value === 'ELEMENT_MAPPING_MODE') ? null : m.value,
               type: 'ARRAY',
               elementMapping: elemMap
             }
           } else {
+            const isArrayChild = ocrOutputMappingArray.value.some((am: any) =>
+              am.isArray && am.value && am.key && m.key.startsWith(am.key + '[')
+            )
+            if (isArrayChild) return
             oM[m.key] = m.value
           }
         })
@@ -2886,7 +2962,7 @@ const handleSave = async () => {
         // 处理出参映射
         a._outputMappingArray.forEach((m: any) => {
           if (!m.key || !m.value) return
-          
+
           if (m.isArray && m.elementMapping) {
             const elemMap: any = {}
             m.elementMapping.forEach((em: any) => {
@@ -2894,14 +2970,29 @@ const handleSave = async () => {
                 elemMap[em.sourceKey] = em.targetKey
               }
             })
-            
+            a._outputMappingArray.forEach((child: any) => {
+              if (child === m || child.isArray || !child.key || !child.value) return
+              const prefix = m.key + '['
+              if (!child.key.startsWith(prefix)) return
+              const bracketEnd = child.key.indexOf(']', prefix.length)
+              if (bracketEnd < 0) return
+              const sourceKey = '$' + child.key.substring(bracketEnd + 1)
+              const targetVal = String(child.value).split('.').pop() || child.value
+              elemMap[sourceKey] = targetVal
+            })
+
+            const outerKey = /^\$\.[^.\[]+$/.test(m.key) ? '.' : m.key
             // 如果整体绑定(m.value)是标记位，说明只需要成员提取
-            oM[m.key] = {
+            oM[outerKey] = {
               target: (!m.value || m.value === 'ELEMENT_MAPPING_MODE') ? null : m.value, // null 表示不绑定整体
               type: 'ARRAY',
               elementMapping: elemMap
             }
           } else {
+            const isArrayChild = a._outputMappingArray.some((am: any) =>
+              am.isArray && am.value && am.key && m.key.startsWith(am.key + '[')
+            )
+            if (isArrayChild) return
             oM[m.key] = m.value
           }
         })
