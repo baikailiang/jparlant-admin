@@ -100,8 +100,16 @@ const friendlyConditions = computed(() => {
       if (Array.isArray(val)) { rules.push(`${key} 属于 [${val.join(', ')}]`) } 
       else if (typeof val === 'object' && val !== null) {
         for (const [op, opVal] of Object.entries(val)) {
-          const symbol = opMap[op] || op
-          rules.push(`${key} ${symbol} ${opVal}`)
+          // 处理 $size 操作符的嵌套对象（如 {$size: {$gt: 3}}）
+          if (op === '$size' && typeof opVal === 'object' && opVal !== null) {
+            for (const [sizeOp, sizeVal] of Object.entries(opVal)) {
+              const sizeSymbol = opMap[sizeOp] || sizeOp
+              rules.push(`${key} 长度 ${sizeSymbol} ${sizeVal}`)
+            }
+          } else {
+            const symbol = opMap[op] || op
+            rules.push(`${key} ${symbol} ${opVal}`)
+          }
         }
       } else { rules.push(`${key} 等于 ${val}`) }
     }

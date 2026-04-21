@@ -391,7 +391,7 @@
                 <n-select v-model:value="condition.conditionType" :options="conditionTypeOptions" placeholder="选择判断逻辑" size="small" />
 
                 <template v-if="condition.conditionType === 'normal'">
-                  <div class="grid grid-cols-2 gap-2">
+                  <div class="space-y-2">
                     <!-- 变量选择框 -->
                     <n-tree-select
                       v-model:value="condition.key"
@@ -404,16 +404,36 @@
                       default-expand-all
                     />
                     
-                    <!-- 匹配值：根据变量类型切换显示 -->
-                    <!-- 如果是布尔类型，显示下拉框 -->
+                    <!-- 新增：STRING 类型专用配置 -->
                     <n-select
-                      v-if="getVariableType(condition.key) === 'BOOLEAN'"
+                      v-if="getVariableType(condition.key) === 'STRING'"
+                      v-model:value="condition.stringNotEmpty"
+                      :options="[{label: '不为空', value: 'true'}, {label: '为空', value: 'false'}]"
+                      placeholder="选择字符串校验规则"
+                      size="small"
+                    />
+                    
+                    <!-- 新增：ARRAY 类型专用配置 -->
+                    <div v-else-if="getVariableType(condition.key) === 'ARRAY'" class="flex gap-2">
+                      <n-select 
+                        v-model:value="condition.arraySizeOp" 
+                        :options="[{label: '大于', value: '$gt'}, {label: '等于', value: '$eq'}, {label: '小于', value: '$lt'}]" 
+                        placeholder="操作符" 
+                        size="small" 
+                        style="width: 100px;" 
+                      />
+                      <n-input-number v-model:value="condition.arraySizeValue" placeholder="数组长度" size="small" class="flex-1" :min="0" />
+                    </div>
+                    
+                    <!-- 原有逻辑：布尔类型显示下拉框 -->
+                    <n-select
+                      v-else-if="getVariableType(condition.key) === 'BOOLEAN'"
                       v-model:value="condition.normalValue"
                       :options="booleanOptions"
                       placeholder="选择布尔值"
                       size="small"
                     />
-                    <!-- 否则显示普通的输入框 -->
+                    <!-- 原有逻辑：其他类型显示普通输入框 -->
                     <n-input 
                       v-else
                       v-model:value="condition.normalValue" 
@@ -435,7 +455,30 @@
                       clearable
                       default-expand-all
                     />
-                    <div class="flex gap-2">
+                    
+                    <!-- 新增：STRING 类型专用配置 -->
+                    <n-select
+                      v-if="getVariableType(condition.key) === 'STRING'"
+                      v-model:value="condition.stringNotEmpty"
+                      :options="[{label: '不为空', value: 'true'}, {label: '为空', value: 'false'}]"
+                      placeholder="选择字符串校验规则"
+                      size="small"
+                    />
+                    
+                    <!-- 新增：ARRAY 类型专用配置 -->
+                    <div v-else-if="getVariableType(condition.key) === 'ARRAY'" class="flex gap-2">
+                      <n-select 
+                        v-model:value="condition.arraySizeOp" 
+                        :options="[{label: '大于', value: '$gt'}, {label: '等于', value: '$eq'}, {label: '小于', value: '$lt'}]" 
+                        placeholder="操作符" 
+                        size="small" 
+                        style="width: 100px;" 
+                      />
+                      <n-input-number v-model:value="condition.arraySizeValue" placeholder="数组长度" size="small" class="flex-1" :min="0" />
+                    </div>
+                    
+                    <!-- 原有逻辑：其他类型使用数值操作符 -->
+                    <div v-else class="flex gap-2">
                       <n-select v-model:value="condition.operatorType" :options="operatorOptions" placeholder="操作符" size="small" style="width: 140px;" />
                       <n-input-number v-model:value="condition.operatorValue" placeholder="数值" size="small" class="flex-1" />
                     </div>
@@ -443,17 +486,42 @@
                 </template>
 
                 <template v-if="condition.conditionType === 'collection'">
-                  <n-tree-select
-                    v-model:value="condition.key"
-                    :options="conditionVariableOptions"
-                    :render-label="renderConditionVariableLabel"
-                    placeholder="选择变量"
-                    size="small"
-                    filterable
-                    clearable
-                    default-expand-all
-                  />
-                  <n-dynamic-tags v-model:value="condition.collectionValues" size="small" placeholder="输入值后回车" />
+                  <div class="space-y-2">
+                    <n-tree-select
+                      v-model:value="condition.key"
+                      :options="conditionVariableOptions"
+                      :render-label="renderConditionVariableLabel"
+                      placeholder="选择变量"
+                      size="small"
+                      filterable
+                      clearable
+                      default-expand-all
+                    />
+                    
+                    <!-- 新增：STRING 类型专用配置 -->
+                    <n-select
+                      v-if="getVariableType(condition.key) === 'STRING'"
+                      v-model:value="condition.stringNotEmpty"
+                      :options="[{label: '不为空', value: 'true'}, {label: '为空', value: 'false'}]"
+                      placeholder="选择字符串校验规则"
+                      size="small"
+                    />
+                    
+                    <!-- 新增：ARRAY 类型专用配置 -->
+                    <div v-else-if="getVariableType(condition.key) === 'ARRAY'" class="flex gap-2">
+                      <n-select 
+                        v-model:value="condition.arraySizeOp" 
+                        :options="[{label: '大于', value: '$gt'}, {label: '等于', value: '$eq'}, {label: '小于', value: '$lt'}]" 
+                        placeholder="操作符" 
+                        size="small" 
+                        style="width: 100px;" 
+                      />
+                      <n-input-number v-model:value="condition.arraySizeValue" placeholder="数组长度" size="small" class="flex-1" :min="0" />
+                    </div>
+                    
+                    <!-- 原有逻辑：其他类型使用集合输入 -->
+                    <n-dynamic-tags v-else v-model:value="condition.collectionValues" size="small" placeholder="输入值后回车" />
+                  </div>
                 </template>
 
                 <template v-if="condition.conditionType === 'spel'">
@@ -854,6 +922,11 @@ interface ConditionItem {
   operatorValue?: number
   collectionValues?: string[]
   spelExpression?: string
+  // 新增：字符串非空判断字段（前端使用 string 类型绑定 n-select，提交时转换为 boolean）
+  stringNotEmpty?: 'true' | 'false'
+  // 新增：数组长度判断字段
+  arraySizeOp?: '$gt' | '$eq' | '$lt'
+  arraySizeValue?: number
 }
 
 const branchConfigForm = ref({
@@ -1021,6 +1094,25 @@ const buildConditionJson = (conditions: ConditionItem[]): Record<string, any> =>
 
     // 从树选择器的路径值中提取变量名（去掉 $. 前缀）
     const key = condition.key.startsWith('$.') ? condition.key.substring(2) : condition.key
+
+    // 新增：根据变量类型生成特定的 JSON 结构
+    const variableType = getVariableType(condition.key)
+    
+    // STRING 类型：使用 $notEmpty 操作符
+    if (variableType === 'STRING' && condition.stringNotEmpty !== undefined) {
+      // 将字符串 'true'/'false' 转换为布尔值
+      const notEmptyValue = condition.stringNotEmpty === 'true' ? true : 
+                           condition.stringNotEmpty === 'false' ? false : 
+                           condition.stringNotEmpty
+      result[key] = { "$notEmpty": notEmptyValue }
+      return
+    }
+    
+    // ARRAY 类型：使用 $size 操作符
+    if (variableType === 'ARRAY' && condition.arraySizeOp && condition.arraySizeValue !== undefined) {
+      result[key] = { "$size": { [condition.arraySizeOp]: condition.arraySizeValue } }
+      return
+    }
 
     switch (condition.conditionType) {
       case 'normal':
