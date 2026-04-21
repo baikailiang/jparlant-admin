@@ -178,3 +178,16 @@ export interface BeanWithMethods {
   displayName: string
   methods: MethodMetadata[]
 }
+
+// 登录相关类型
+export interface UserInfo {
+  id: number
+  username: string
+  nickname?: string
+  avatar?: string
+}
+
+export interface LoginResult {
+  token: string
+  userInfo: UserInfo
+}

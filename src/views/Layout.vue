@@ -63,33 +63,23 @@
           </div>
 
           <div class="flex items-center space-x-3">
-            <!-- 模式切换按钮 -->
-            <!-- <button
-              @click="themeStore.toggleTheme"
-              class="theme-toggle-wrapper group relative flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-500"
-              :class="themeStore.isDark ? 'bg-amber-400/10 shadow-[0_0_20px_rgba(251,191,36,0.2)] border border-amber-400/20' : 'bg-indigo-50 shadow-sm border border-indigo-100'"
-            >
-              <div class="relative w-full h-full flex items-center justify-center overflow-hidden">
-                
-                <div class="absolute transition-all duration-500 transform" 
-                  :class="themeStore.isDark ? '-translate-y-12 opacity-0 rotate-90' : 'translate-y-0 opacity-100 rotate-0'">
-                  <n-icon size="24" color="#6366f1">
-                    <svg viewBox="0 0 24 24">
-                      <path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1"/>
-                    </svg>
-                  </n-icon>
-                </div>
-                
-                <div class="absolute transition-all duration-500 transform" 
-                  :class="themeStore.isDark ? 'translate-y-0 opacity-100 rotate-0' : 'translate-y-12 opacity-0 -rotate-90'">
-                  <n-icon size="26" color="#fbbf24" class="sun-icon-glow">
-                    <svg viewBox="0 0 24 24">
-                      <path fill="currentColor" d="M12 7a5 5 0 1 0 5 5 5 5 0 0 0-5-5m0 8a3 3 0 1 1 3-3 3 3 0 0 1-3 3m0-9V4m0 16v-2m8-8h2M2 12h2m15.07-7.07l-1.41 1.41M5.05 18.95l-1.42 1.42M18.95 18.95l1.42 1.42M5.05 5.05L3.64 3.64"/>
-                    </svg>
-                  </n-icon>
-                </div>
+            <!-- 用户信息 -->
+            <n-dropdown :options="userDropdownOptions" @select="handleUserDropdownSelect">
+              <div class="flex items-center space-x-2 cursor-pointer px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
+                <n-avatar
+                  round
+                  size="small"
+                  :src="userStore.userInfo?.avatar"
+                  :fallback-src="defaultAvatar"
+                />
+                <span class="text-sm font-medium" :class="themeStore.isDark ? 'text-slate-200' : 'text-gray-700'">
+                  {{ userStore.userInfo?.nickname || userStore.userInfo?.username || '用户' }}
+                </span>
+                <n-icon size="16" :class="themeStore.isDark ? 'text-slate-400' : 'text-gray-500'">
+                  <svg viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                </n-icon>
               </div>
-            </button> -->
+            </n-dropdown>
           </div>
         </n-layout-header>
 
@@ -113,16 +103,39 @@ import {
   NMenu,
   NBreadcrumb,
   NBreadcrumbItem,
-  NIcon
+  NIcon,
+  NDropdown,
+  NAvatar,
+  useMessage
 } from 'naive-ui'
 import { useThemeStore } from '@/stores/theme'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
 const route = useRoute()
 const themeStore = useThemeStore()
+const userStore = useUserStore()
+const message = useMessage()
 
 const collapsed = ref(false)
 const activeKey = ref('')
+const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCIgZmlsbD0iI2U1ZTdlYiIvPjxwYXRoIGQ9Ik0xMiAxMmMyLjIxIDAgNC0xLjc5IDQtNHMtMS43OS00LTQtNC00IDEuNzktNCA0IDEuNzkgNCA0IDR6bTAgMmMtMi42NyAwLTggMS4zNC04IDR2MmgxNnYtMmMwLTIuNjYtNS4zMy00LTgtNHoiIGZpbGw9IiM5Y2EzYWYiLz48L3N2Zz4='
+
+const userDropdownOptions = [
+  {
+    label: '退出登录',
+    key: 'logout',
+    icon: () => h(NIcon, null, { default: () => h('svg', { viewBox: '0 0 24 24' }, [h('path', { fill: 'currentColor', d: 'M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z' })]) })
+  }
+]
+
+const handleUserDropdownSelect = (key: string) => {
+  if (key === 'logout') {
+    userStore.logout()
+    message.success('已退出登录')
+    router.push('/login')
+  }
+}
 
 const menuOptions = computed(() => [
   {

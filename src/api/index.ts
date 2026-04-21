@@ -212,4 +212,11 @@ export const chatApi = {
 }
 
 
+// Auth APIs
+export const authApi = {
+  login: (data: { username: string; password: string }) => api.post<LoginResult>('/auth/login', data),
+  logout: () => api.post('/auth/logout'),
+  getCurrentUser: () => api.get('/auth/current')
+}
+
 export default api
