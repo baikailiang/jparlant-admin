@@ -117,7 +117,7 @@ spring:
 <dependency>
     <groupId>io.gitee.sylvara</groupId>
     <artifactId>jparlant-spring-boot-starter</artifactId>
-    <version>1.0.1.RELEASE</version>
+    <version>1.0.3.RELEASE</version>
 </dependency>
 ```
 
